@@ -1,16 +1,16 @@
 #!/bin/bash
 
+
 # ----------------------------------------------------------------------
-# | Variables Générales                                                |
+# | Variables Générales                                                    |
 # ----------------------------------------------------------------------
 
 CURRENTDATE=$(date +%Y%m%d-%H%M)
 FOLDER="Bjr"
 DATACSV=data.csv
 #FILE="document/${FOLDER}-${CURRENTDATE}/bonjour-${CURRENTDATE}.html"
-FILE_ANNIV_CARTE_NOIR_CARRE_VIP="anniversaire_carte_noire_carre_VIP.html"
-FILE_ANNIV_CARTE_NOIR_CASINOPASS="anniversaire_carte_noire_Casinopass.html"
-FILE_CONVERSIONT_POINT_CARRE_VIP="conversion_points_recompenses_carre_VIP.html"
+FILE="brj.html"
+
 
 
 # ----------------------------------------------------------------------
@@ -43,9 +43,8 @@ print_success() {
 }
 
 # ----------------------------------------------------------------------
-# | Fonction                                 		                   |
+# | Fonction                                                   |
 # ----------------------------------------------------------------------
-
 Verif_presence_data()
 {
 	if [[ ! -e ./data/$DATACSV ]]; then
@@ -55,80 +54,84 @@ Verif_presence_data()
 	else 
 		print_success "OK Fichier $DATACSV est présent ";
 	fi
+
 }
 
-Selectfichier()
-{
-print_question "Selectionnez le fichier à générer :"
-echo  ""[1]" Anniversaire_carte_noire_carre_VIP"
-echo  ""[2]" Anniversaire_carte_noire_Casinopass"
-echo  ""[3]" Conversion_points_recompenses_carre_VIP "
-echo  ""[4]" Tous"
-echo  ""[5]" Supprimer les anciens fichiers générés "
 
+Selectprog()
+{
+print_question "selectionnez le programme"
+echo  ""[1]" delet old folder"
+echo  ""[2]" Creation_folder"
 
 read reponse 
 case $reponse in
 	"1") find document/* -type d -print0 | xargs -0 rm -rf;
                 print_check "Old generated folders removed"
-        Selectfichier;;
-	"2") AnnivVIP > FILE_ANNIV_CARTE_NOIR_CARRE_VIP;;
-	"3") AnnivCASINOPASS > FILE_ANNIV_CARTE_NOIR_CASINOPASS;;
-	"4") BurnVIP > FILE_CONVERSIONT_POINT_CARRE_VIP;;
-	"5") AnnivVIP > FILE_ANNIV_CARTE_NOIR_CARRE_VIP
-AnnivCASINOPASS > FILE_ANNIV_CARTE_NOIR_CASINOPASS
-BurnVIP > FILE_CONVERSIONT_POINT_CARRE_VIP;;
-	"6") CellOpen;;
-	*) Selectfichier
+        Selectprog;;
+	"2") Creation_folder;;
+	"3") Ecrire_dans_lefichier;;
+	*) Selectprog
 esac
 }
 
-BodyOpen()
+Clean()
 {
-echo -e "<body>  \n
-		<table cellspacing="0" class="ms-rteTable-default" style="width: 100%;"> \n
-   			<tbody>" \n
+	print_question "etes-vous sur ?"
+	select yn in "Yes" "No"
+    do
+        case $yn in
+            Yes )
+                find document/* -type d -print0 | xargs -0 rm -rf;
+                print_check "Old generated folders removed";
+                break;;
+            No )
+                break;;
+        esac
+    done
+
+    Selectprog
 }
 
-LineOpen()
+Creation_folder() 
 {
-echo -e "     <tr>" 
-}
+	#mkdir -p ./document/${FOLDER}-${CURRENTDATE}
+	Ecrire_dans_lefichier2 > ./document/bjr.html
 
-CellOpen()
-{
-echo -e "      <td class=\"ms-rteTable-default\">​​​​​​​​​​ "\n "top"
-}
-
-CellClose()
-{
-
-}
-
-BodyClose()
-{
-
-}
-
-AnnivVIP()
-{
-BodyOpen
+	
 
 }
 
-AnnivCASINOPASS()
+Saut_de_ligne()
 {
-
+	echo "<BR>"
 }
 
-BurnVIP()
+Ecrire_dans_lefichier2()
 {
+cpt=0
+for ROWS in $(grep -vE "^#|^$" "data/$DATACSV"); do
+        # IFS storage
+        OIFS=$IFS
+        IFS=',' read -r -a ROW <<< "$ROWS"
 
+        # $0=nom
+        # $1=age
+        # $2=ville
+        while [[ cpt<10 ]]; do
+
+        	echo "$cpt ${ROW[0]} à ${ROW[1]} ans et vie actuelement à ${ROW[2]} <BR>" 
+        	((cpt+=1))
+        done
+
+        # restore IFS
+        IFS=$OIFS
+    done
 }
+
 # ----------------------------------------------------------------------
-# | Run		                              	            	           |
+# | RUN                                                   |
 # ----------------------------------------------------------------------
 
 Verif_presence_data
-Selectfichier
-
+Creation_folder
